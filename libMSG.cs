@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+//using System.Security.Cryptography;
 
 namespace MSGEdit
 {
@@ -86,10 +87,11 @@ namespace MSGEdit
                     fstream.Write(bytes, 0, bytes.Length);
                 }
                 fstream.Close();
+                error = "";
             }
             catch (Exception except) {
                 error = except.Message;
-                file_loaded = false;
+                //file_loaded = false;
             }
         }
         public void SaveTXT(string filename)
@@ -130,6 +132,7 @@ namespace MSGEdit
                     fstream.Write(bytes, 0, bytes.Length);
                 }
                 fstream.Close();
+                error = "";
             }
             catch (Exception exept) {
                 error = exept.Message;
@@ -167,6 +170,7 @@ namespace MSGEdit
                     messages.Add(encoder.GetString(file_contents, offsets[i], length));
                 }
                 file_loaded = true;
+                error = "";
             }
             catch (Exception exept)
             {
@@ -195,6 +199,7 @@ namespace MSGEdit
                     messages.Add(lines[i + 1].Substring(msg_offset));
                 }
                 file_loaded = true;
+                error = "";
             }
             catch (Exception exept) {
                 error = exept.Message;
@@ -247,6 +252,7 @@ namespace MSGEdit
                 }
                 msg_count += index - msg_count + 1;
                 messages[index] = value + "\0";
+                error = "";
             }
         }
         //public string At(int index) {
@@ -260,6 +266,7 @@ namespace MSGEdit
             try {
                 messages.RemoveRange(start_index, count);
                 msg_count -= count;
+                error = "";
             }
             catch (Exception exept) {
                 error = exept.Message;
@@ -276,12 +283,37 @@ namespace MSGEdit
             {
                 messages.Insert(index, message);
                 msg_count++;
+                error = "";
             }
             catch (Exception exept)
             {
                 error = exept.Message;
                 return;
             }
+        }
+
+        //This method is quite raw and might not produce random enough results.
+        //I've heard about Random's disadvantages, but for now we'll just have to go with it, I guess.
+        //For some reason, I don't select a seed based on local PC time, but that or something similar may soon be added.
+        public void Randomize() {
+            //RNGCryptoServiceProvider rand = new RNGCryptoServiceProvider();
+            
+            Random rand = new Random();
+            int n = msg_count;
+            while (n > 1) {
+                //byte[] box = new byte[1];
+                //do {
+                //    rand.GetBytes(box);
+                //}
+                //while (box[0] >= n * (Byte.MaxValue / n));
+                //int k = (box[0] % n);
+                n--;
+                int k = rand.Next(n + 1);
+                string temp = messages[k];
+                messages[k] = messages[n];
+                messages[n] = temp;
+            }
+            error = "";
         }
     }
 }
