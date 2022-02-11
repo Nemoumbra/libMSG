@@ -7,11 +7,11 @@ using System.IO;
 
 namespace MSGEdit
 {
-    enum PataponMessageFormat {
+    public enum PataponMessageFormat {
         MSG,
         TXT
     }
-    class MSGtoTXT
+    public class MSGtoTXT
     {
         private int magic;
         private bool file_loaded = false;
@@ -206,6 +206,13 @@ namespace MSGEdit
                 file_loaded = false;
             }
         }
+        public void MakeNewFile() {
+            file_loaded = true;
+            messages = new List<string>(10);
+            msg_count = 0;
+            magic = 0;
+            error = "";
+        }
 
         public MSGtoTXT() {
 
@@ -250,10 +257,19 @@ namespace MSGEdit
                 for (int i = 0; i < index - msg_count + 1; i++) {
                     messages.Add("\0");
                 }
-                msg_count += index - msg_count + 1;
+                if (msg_count <= index) {
+                    msg_count += index - msg_count + 1;
+                }
                 messages[index] = value + "\0";
                 error = "";
             }
+        }
+        public string[] Content() {
+            if (!file_loaded) {
+                error = "File not loaded!";
+                return null;
+            }
+            return messages.ToArray();
         }
         //public string At(int index) {
         //
@@ -295,10 +311,10 @@ namespace MSGEdit
         //This method is quite raw and might not produce random enough results.
         //I've heard about Random's disadvantages, but for now we'll just have to go with it, I guess.
         //For some reason, I don't select a seed based on local PC time, but that or something similar may soon be added.
-        public void Randomize() {
+        public void Randomize(int seed) {
             //RNGCryptoServiceProvider rand = new RNGCryptoServiceProvider();
             
-            Random rand = new Random();
+            Random rand = new Random(seed);
             int n = msg_count;
             while (n > 1) {
                 //byte[] box = new byte[1];
