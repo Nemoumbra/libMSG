@@ -1,18 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
 //using System.Security.Cryptography;
 
-namespace MSGEdit
-{
+namespace MSGEdit {
     public enum PataponMessageFormat {
         MSG,
         TXT
     }
-    public class MSGtoTXT
-    {
+    public class MSGtoTXT {
         private int magic;
         private bool file_loaded = false;
         private int msg_count;
@@ -30,10 +28,8 @@ namespace MSGEdit
                 magic = value;
             }
         }
-        public bool isLoaded
-        {
-            get
-            {
+        public bool isLoaded {
+            get {
                 return file_loaded;
             }
         }
@@ -49,8 +45,7 @@ namespace MSGEdit
         private List<string> messages;
         private List<int> offsets;
 
-        public void SaveMSG(string filename)
-        {
+        public void SaveMSG(string filename) {
             if (!file_loaded) {
                 error = "File not loaded!";
                 return;
@@ -62,7 +57,7 @@ namespace MSGEdit
                 fstream.Write(bytes, 0, bytes.Length);
                 bytes = BitConverter.GetBytes(magic);
                 fstream.Write(bytes, 0, bytes.Length);
-                
+
                 //recalculate offsets and write them to file
                 offsets = new List<int>(msg_count);
                 offsets.Add(8 + 4 * msg_count + 4);
@@ -74,7 +69,7 @@ namespace MSGEdit
                     bytes = BitConverter.GetBytes(offsets[i]);
                     fstream.Write(bytes, 0, bytes.Length);
                 }
-                
+
                 bytes = BitConverter.GetBytes(0);
                 fstream.Write(bytes, 0, bytes.Length);
                 //fstream.Write(bytes, 0, bytes.Length);
@@ -94,8 +89,7 @@ namespace MSGEdit
                 //file_loaded = false;
             }
         }
-        public void SaveTXT(string filename)
-        {
+        public void SaveTXT(string filename) {
             if (!file_loaded) {
                 error = "File not loaded!";
                 return;
@@ -138,10 +132,8 @@ namespace MSGEdit
                 error = exept.Message;
             }
         }
-        public void LoadMSG(string filename)
-        {
-            try
-            {
+        public void LoadMSG(string filename) {
+            try {
                 byte[] file_contents = File.ReadAllBytes(filename);
                 int filesize = file_contents.Length;
                 UnicodeEncoding encoder = new UnicodeEncoding();
@@ -150,20 +142,16 @@ namespace MSGEdit
                 int offset;
                 offsets = new List<int>(msg_count);
                 messages = new List<string>(msg_count);
-                for (int i = 0; i < msg_count; i++)
-                {
+                for (int i = 0; i < msg_count; i++) {
                     offset = BitConverter.ToInt32(file_contents, 8 + 4 * i);
                     offsets.Add(offset);
                 }
                 int length;
-                for (int i = 0; i < msg_count; i++)
-                {
-                    if (i == msg_count - 1)
-                    {
+                for (int i = 0; i < msg_count; i++) {
+                    if (i == msg_count - 1) {
                         length = filesize - offsets[msg_count - 1];
                     }
-                    else
-                    {
+                    else {
                         length = offsets[i + 1] - offsets[i];
                     }
                     //messages.Add(BitConverter.ToString(file_contents, offsets[i], length));
@@ -172,16 +160,13 @@ namespace MSGEdit
                 file_loaded = true;
                 error = "";
             }
-            catch (Exception exept)
-            {
+            catch (Exception exept) {
                 file_loaded = false;
                 error = exept.Message;
             }
         }
-        public void LoadTXT(string filename)
-        {
-            try
-            {
+        public void LoadTXT(string filename) {
+            try {
                 string[] lines = File.ReadAllLines(filename);
                 string[] words = lines[0].Split(':')[1].Split(',');
                 magic = Convert.ToInt32(words[0]);
@@ -205,6 +190,18 @@ namespace MSGEdit
                 error = exept.Message;
                 file_loaded = false;
             }
+        }
+        public PataponMessageFormat LoadAny(string filename) {
+            // so far this will be very easy and simple!
+            LoadMSG(filename);
+            if (file_loaded) {
+                return PataponMessageFormat.MSG;
+            }
+            LoadTXT(filename);
+            if (!file_loaded) {
+                error = filename + " is neither TXT file nor MSG file";
+            }
+            return PataponMessageFormat.TXT;
         }
         public void MakeNewFile() {
             file_loaded = true;
@@ -290,19 +287,16 @@ namespace MSGEdit
             }
         }
         public void Insert(int index, string message) {
-            if (!file_loaded)
-            {
+            if (!file_loaded) {
                 error = "File not loaded!";
                 return;
             }
-            try
-            {
+            try {
                 messages.Insert(index, message);
                 msg_count++;
                 error = "";
             }
-            catch (Exception exept)
-            {
+            catch (Exception exept) {
                 error = exept.Message;
                 return;
             }
@@ -313,7 +307,7 @@ namespace MSGEdit
         //For some reason, I don't select a seed based on local PC time, but that or something similar may soon be added.
         public void Randomize(int seed) {
             //RNGCryptoServiceProvider rand = new RNGCryptoServiceProvider();
-            
+
             Random rand = new Random(seed);
             int n = msg_count;
             while (n > 1) {
